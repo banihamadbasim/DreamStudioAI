@@ -3,7 +3,8 @@ name: Build DreamStudioAI
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
@@ -18,10 +19,6 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-
-
-      - name: Install Android SDK packages
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
