@@ -21,16 +21,35 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.9"
 
-      - name: Build Release APK
-        run: gradle assembleRelease
+      - name: Create signing key
+        run: |
+          keytool -genkeypair \
+            -v \
+            -keystore release-key.jks \
+            -alias dreamstudio \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass dreamstudio123 \
+            -keypass dreamstudio123 \
+            -dname "CN=DreamStudioAI, OU=DreamStudioAI, O=DreamStudioAI, L=Jordan, S=Jordan, C=JO"
+
+      - name: Build signed Release APK
+        run: |
+          gradle assembleRelease \
+            -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/release-key.jks \
+            -Pandroid.injected.signing.store.password=dreamstudio123 \
+            -Pandroid.injected.signing.key.alias=dreamstudio \
+            -Pandroid.injected.signing.key.password=dreamstudio123
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
