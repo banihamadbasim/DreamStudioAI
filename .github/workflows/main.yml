@@ -29,7 +29,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          STORE_PASSWORD="$(openssl rand -hex 32)"
+          STORE_KEY_PASSWORD="$STORE_PASSWORD"
           KEY_PASSWORD="$(openssl rand -hex 32)"
 
           echo "::add-mask::$STORE_PASSWORD"
