@@ -16,6 +16,32 @@ android {
         versionName = "1.0"
     }
 
+    signingConfigs {
+        create("release") {
+            val signingStoreFile = System.getenv("SIGNING_STORE_FILE")
+            val signingStorePassword = System.getenv("SIGNING_STORE_PASSWORD")
+            val signingKeyAlias = System.getenv("SIGNING_KEY_ALIAS")
+            val signingKeyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+
+            if (!signingStoreFile.isNullOrBlank()) {
+                storeFile = file(signingStoreFile)
+                storePassword = signingStorePassword
+                keyAlias = signingKeyAlias
+                keyPassword = signingKeyPassword
+
+                enableV1Signing = true
+                enableV2Signing = true
+            }
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -24,12 +50,15 @@ android {
 
 dependencies {
     implementation(platform("androidx.compose:compose-bom:2024.12.01"))
+
     implementation("androidx.activity:activity-compose:1.10.0")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
+
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
