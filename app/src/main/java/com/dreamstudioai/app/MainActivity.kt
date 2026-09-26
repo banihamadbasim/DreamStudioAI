@@ -6,10 +6,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -93,6 +100,7 @@ fun DreamStudioApp() {
 fun HomeScreen(modifier: Modifier = Modifier) {
     var prompt by remember { mutableStateOf("") }
     var selectedImage by remember { mutableStateOf<Uri?>(null) }
+    var activeTool by remember { mutableStateOf<String?>(null) }
 
     val pickImage = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
@@ -106,6 +114,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             .padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+
         Text(
             "DreamStudio AI",
             fontSize = 30.sp,
@@ -120,17 +129,23 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         FeatureCard(
             "🖼️  صورة → صورة",
             "تعديل الصورة، الخلفية، الملابس وتحسين الجودة"
-        )
+        ) {
+            activeTool = "image_to_image"
+        }
 
         FeatureCard(
             "🎬  صورة → فيديو",
             "حرّك الصورة وأنشئ فيديو بالذكاء الاصطناعي"
-        )
+        ) {
+            activeTool = "image_to_video"
+        }
 
         FeatureCard(
             "✨  مؤثرات AI",
             "اكتب ما تريد بالعربي ودع المحرك ينفذه"
-        )
+        ) {
+            activeTool = "effects"
+        }
 
         OutlinedButton(
             onClick = {
@@ -170,7 +185,9 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 
         OutlinedTextField(
             value = prompt,
-            onValueChange = { prompt = it },
+            onValueChange = {
+                prompt = it
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(130.dp),
@@ -188,7 +205,9 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         )
 
         Button(
-            onClick = { },
+            onClick = {
+                activeTool = "create"
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp),
@@ -208,20 +227,31 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         }
 
         Text(
-            "الخطوة الحالية: واجهة التطبيق فقط. ربط محرك الذكاء الاصطناعي سيتم في المرحلة التالية.",
+            "اختر أداة من الأعلى للبدء.",
             color = Color.Gray,
             fontSize = 13.sp
         )
+
+        activeTool?.let { tool ->
+            ToolDialog(tool) {
+                activeTool = null
+            }
+        }
     }
 }
 
 @Composable
 fun FeatureCard(
     title: String,
-    subtitle: String
+    subtitle: String,
+    onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onClick()
+            },
         colors = CardDefaults.cardColors(
             containerColor = Card
         ),
@@ -231,6 +261,7 @@ fun FeatureCard(
             Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             Column(
                 Modifier.weight(1f)
             ) {
@@ -255,6 +286,53 @@ fun FeatureCard(
             )
         }
     }
+}
+
+@Composable
+fun ToolDialog(
+    tool: String,
+    onDismiss: () -> Unit
+) {
+    val title = when (tool) {
+        "image_to_image" -> "صورة → صورة"
+        "image_to_video" -> "صورة → فيديو"
+        "effects" -> "مؤثرات AI"
+        else -> "إنشاء"
+    }
+
+    val message = when (tool) {
+        "image_to_image" ->
+            "تم فتح أداة صورة → صورة. سيتم ربط محرك الذكاء الاصطناعي في المرحلة التالية."
+
+        "image_to_video" ->
+            "تم فتح أداة صورة → فيديو. سيتم ربط محرك الفيديو في المرحلة التالية."
+
+        "effects" ->
+            "تم فتح أداة مؤثرات AI. سيتم ربط المؤثرات في المرحلة التالية."
+
+        else ->
+            "زر الإنشاء يعمل الآن، وسيتم ربطه بمحرك الذكاء الاصطناعي في المرحلة التالية."
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(title)
+        },
+        text = {
+            Text(
+                message,
+                textAlign = TextAlign.Right
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onDismiss
+            ) {
+                Text("حسنًا")
+            }
+        }
+    )
 }
 
 @Composable
@@ -302,6 +380,7 @@ fun SimplePage(
             .padding(22.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+
         Text(
             title,
             fontSize = 28.sp,
